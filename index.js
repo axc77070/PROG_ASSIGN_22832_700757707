@@ -24,7 +24,7 @@ app.get("/products", async (req, res) => {
     const products = await Product.find({}).exec();
     if (!products) {
       return res.status(400).json({
-        message: "sorry. something went wrong. try again.",
+        message: "Something went wrong. Try again.",
       });
     }
 
@@ -34,14 +34,14 @@ app.get("/products", async (req, res) => {
   }
 });
 
-app.post("/product", async (req, res) => {
+app.post("/products", async (req, res) => {
   try {
     const newProduct = new Product(req.body);
     const savedProduct = await newProduct.save();
 
     if (savedProduct) {
       res.status(200).json({
-        message: "product has been saved",
+        message: "Product has been created",
         savedProduct,
       });
     }
@@ -56,7 +56,7 @@ app.get("/products/:code", async (req, res) => {
 
     if (!product) {
       return res.status(400).json({
-        message: "sorry.we cannot get the requested product",
+        message: "Sorry, Requested product is not found",
       });
     }
     return res.status(200).json(product);
@@ -70,11 +70,11 @@ app.delete("/products/:code", async (req, res) => {
     const product = await Product.deleteOne({ code: req.params.code }).exec();
     if (product.deletedCount == 0) {
       return res.status(400).json({
-        message: "sorry. record not found!!!!",
+        message: "Sorry. Record not found!!!!",
       });
     }
     return res.status(200).json({
-      message: "product record has been deleted successfully!!",
+      message: "Product record has been deleted successfully!!",
     });
   } catch (error) {
     console.log(error);
@@ -89,13 +89,64 @@ app.put("/products/:code", async (req, res) => {
     ).exec();
 
     return res.status(200).json({
-      message: "record has been updated",
+      message: "Record has been updated",
     });
   } catch (error) {
     console.log(error);
   }
+  app.patch("/products/:code", async (req, res) => {
+    try {
+      const updatedProduct = await Product.findOneAndUpdate(
+        { code: req.params.code },
+        { $set: req.body },
+        { new: true }
+      ).exec();
+  
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: "Product not found",
+        });
+      }
+  
+      return res.status(200).json({
+        message: "Product has been updated",
+        product: updatedProduct,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  });
+  
 });
 
-app.listen(5000, () => {
-  console.log("server is running on port 5000");
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
+app.patch("/products/:code", async (req, res) => {
+  try {
+    const updatedProduct = await Product.findOneAndUpdate(
+      { code: req.params.code },
+      { $set: req.body },
+      { new: true }
+    ).exec();
+
+    if (!updatedProduct) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Product has been updated",
+      product: updatedProduct,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 });
